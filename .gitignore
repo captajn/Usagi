@@ -1,0 +1,17 @@
+# Local tools (contains hardcoded credentials)
+tool-ios.py
+.last_build
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+build/
+.build/
+.swiftpm/
+Package.resolved
+
+# Artifacts
+*.ipa
+*.xcarchive
+artifacts/

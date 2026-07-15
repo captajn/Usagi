@@ -1,0 +1,267 @@
+workflows:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # iOS Build — single workflow, dual outputs:
+  #   1. .app (iPhone Simulator)  → App Preview Quick Launch (browser)
+  #   2. .ipa (unsigned, iphoneos) → Sideload via AltStore / Sideloadly / TrollStore
+  #
+  # Versioning:
+  #   - Source of truth = `project.yml` MARKETING_VERSION
+  #   - Bump qua `tool-ios.py version 0.x.y` rồi push → CI auto pickup.
+  #   - **Manual override**: vào Codemagic UI → Start build → "Build configuration"
+  #     → set environment variable:
+  #         VERSION_OVERRIDE = 0.2.0        ← hoặc 0.3.0, 1.0.0...
+  #         BUILD_OVERRIDE   = 20           ← optional, default = timestamp
+  #     hoặc commit env var trực tiếp ở `vars:` block phía dưới.
+  #
+  # Billing:
+  #   - Build minutes: mac_mini_m1 standard rate
+  #   - Preview minutes: ONLY counted khi click Quick Launch (interactive simulator
+  #     session). 100 free min/month, sau đó $0.095/min.
+  # ─────────────────────────────────────────────────────────────────────────────
+  ios-build:
+    name: iOS Build (Preview + Sideload)
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    cache:
+      # CONSERVATIVE cache — chỉ giữ stable components để tránh pollution.
+      #
+      # Strategy: cache CHỈ những path stable, ko depend per-build state:
+      #   • `org.swift.swiftpm` — SPM CLI download cache (zip packages)
+      #   • `DerivedData/.../SourcePackages` — Xcode-resolved SPM source
+      #     (tránh re-clone từ git mỗi build, ~30s saved)
+      #   • `clang` cache — module cache cho system frameworks (stable)
+      #
+      # Skipped (cố ý):
+      #   • DerivedData/.../Build/* — pollution risk, để rebuild fresh
+      #   • com.apple.dt.Xcode — chứa device support, hiếm dùng cho CI
+      #   • ModuleCache.noindex toplevel — Xcode tự manage, rebuild fast
+      #
+      # Trade-off: cold compile mỗi build (~6-8 min) thay vì incremental
+      # variable (~3-12 min). Predictable hơn, scale tốt khi codebase lớn.
+      cache_paths:
+        - $HOME/Library/Caches/org.swift.swiftpm
+        - $HOME/Library/Developer/Xcode/DerivedData/**/SourcePackages
+        - $HOME/Library/Caches/clang
+    environment:
+      xcode: "16.4"
+      vars:
+        XCODE_PROJECT: Usagi.xcodeproj
+        XCODE_SCHEME: Usagi
+        BUNDLE_ID: org.draken.usagi
+        # ⚠️  DEFAULT_VERSION = LAST-RESORT FALLBACK only.
+        # Source of truth thực sự = `project.yml` MARKETING_VERSION
+        # (script "Compute version" tự đọc file này). Bump qua `tool-ios.py
+        # version 0.x.y` rồi push → CI auto pickup.
+        DEFAULT_VERSION: "0.1.0"
+        BASELINE_BUILD: "1"
+        # ────────────────────────────────────────────────────────────────
+        # 🛠️  MANUAL VERSION BUMP — uncomment + sửa giá trị, push commit.
+        # Override này win cao nhất.
+        # ────────────────────────────────────────────────────────────────
+        # VERSION_OVERRIDE: "0.2.0"
+        # BUILD_OVERRIDE: "20"
+    scripts:
+      - name: Install xcodegen
+        script: |
+          brew install xcodegen
+      - name: Generate Xcode project
+        script: |
+          xcodegen generate
+      - name: Resolve Swift packages
+        script: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
+      - name: Compute version + build number
+        script: |
+          # ──────────────────────────────────────────────────────────
+          # 1. Version source ưu tiên (cao → thấp):
+          #    a. VERSION_OVERRIDE env var (manual UI bump)
+          #    b. project.yml MARKETING_VERSION  ← SINGLE SOURCE OF TRUTH
+          #       (tool-ios.py set_version chỉ sửa file này → CI auto pickup)
+          #    c. DEFAULT_VERSION env var (last-resort fallback)
+          # 2. Build: monotonic timestamp mod 100000 (collision-free
+          #    cho ~1.15 days, safe vì Codemagic build < few mins).
+          # ──────────────────────────────────────────────────────────
+          set +e
+          # b. project.yml — grep + sed đơn giản, tránh phụ thuộc yq trên
+          # Codemagic image. Pattern match: `    MARKETING_VERSION: "0.1.0"`.
+          PROJECT_VERSION=$(grep -E '^\s+MARKETING_VERSION:' project.yml | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          if [ -n "$PROJECT_VERSION" ]; then
+            DEFAULT_VERSION="$PROJECT_VERSION"
+            echo "📋 project.yml MARKETING_VERSION = $PROJECT_VERSION"
+          else
+            echo "⚠️  Không parse được MARKETING_VERSION từ project.yml — fallback DEFAULT_VERSION env=$DEFAULT_VERSION"
+          fi
+          set -e
+
+          if [ -n "$VERSION_OVERRIDE" ]; then
+            VERSION="$VERSION_OVERRIDE"
+            echo "✅ VERSION_OVERRIDE=$VERSION"
+          else
+            VERSION="$DEFAULT_VERSION"
+            echo "📋 Using DEFAULT_VERSION=$VERSION"
+          fi
+
+          if [ -n "$BUILD_OVERRIDE" ]; then
+            BUILD="$BUILD_OVERRIDE"
+          else
+            # Timestamp mod 100000 keeps build < INT32, monotonic across
+            # rebuilds in same day. Floor at BASELINE_BUILD để không
+            # tụt ngược version code khi sideload.
+            TS=$(($(date +%s) % 100000))
+            if [ "$TS" -lt "$BASELINE_BUILD" ]; then
+              BUILD="$BASELINE_BUILD"
+            else
+              BUILD="$TS"
+            fi
+          fi
+
+          echo "VERSION=$VERSION" >> $CM_ENV
+          echo "BUILD=$BUILD" >> $CM_ENV
+          echo "🎯 FINAL: $VERSION+$BUILD"
+      - name: Purge stale .app artifacts from cache
+        script: |
+          # Cache restore có thể mang theo `.app` cũ từ build trước (icon rỗng).
+          # Codemagic artifact glob `**/*.app` ko phân biệt fresh vs stale
+          # → có thể upload nhầm .app cũ cho App Preview. Wipe trước khi
+          # build lại để bảo đảm fresh assets.
+          DD="$HOME/Library/Developer/Xcode/DerivedData"
+          if [ -d "$DD" ]; then
+            find "$DD" -type d -name "*.app" -prune -exec rm -rf {} + 2>/dev/null || true
+            find "$DD" -type f -name "Assets.car" -delete 2>/dev/null || true
+            echo "✅ Purged stale .app + Assets.car from DerivedData"
+          fi
+      - name: Download Metal Toolchain (Xcode 26)
+        script: |
+          # Xcode 26 cần Metal Toolchain riêng — missing → build fail "cannot execute tool 'metal'"
+          xcodebuild -downloadComponent MetalToolchain 2>&1 || true
+      - name: Build .app for iOS Simulator (App Preview)
+        script: |
+          # Raw xcodebuild output → tee log file. KHÔNG pipe qua beautifier
+          # vì format custom dễ làm mất `error:` line khi grep. Codemagic UI
+          # handle log dài tốt — verbose ko sao.
+          # Restrict arm64 (Codemagic mac mini M1 native) — skip x86_64 vì
+          # build x86_64 phụ chỉ dùng cho Intel Mac, ko cần cho App Preview.
+          # Codemagic default `set -e` → pipeline fail kill shell trước khi
+          # chạy error handler. Disable + dùng PIPESTATUS check thủ công.
+          set +e
+          set -o pipefail
+          # `arch=` không phải qualifier hợp lệ cho `generic/platform`
+          # (xcodebuild exit 70). Restrict arm64 qua build setting `ARCHS` +
+          # `EXCLUDED_ARCHS` thay vì destination.
+          # CI-tuned flags:
+          #   • COMPILER_INDEX_STORE_ENABLE=NO → skip Xcode index store (saves
+          #     10-20% on cold compile, không cần cho headless build).
+          #   • -skipPackagePluginValidation → skip SPM plugin signature check
+          #     warnings, tăng tốc resolve.
+          #   • -skipMacroValidation → bỏ qua macro signature warnings.
+          #   • -parallelizeTargets → song song hóa target build (mặc định ON
+          #     trên Xcode 14+, set rõ cho an toàn).
+          xcodebuild build \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination "generic/platform=iOS Simulator" \
+            -parallelizeTargets \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            ARCHS=arm64 \
+            EXCLUDED_ARCHS=x86_64 \
+            ONLY_ACTIVE_ARCH=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build-sim.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo ""
+            echo "=========================================="
+            echo "BUILD FAILED (exit $EXIT) — error: lines:"
+            echo "=========================================="
+            grep -nE "error:" build-sim.log | head -200 || echo "(no 'error:' substring found)"
+            echo ""
+            echo "=========================================="
+            echo "warning: lines:"
+            echo "=========================================="
+            grep -nE "warning:" build-sim.log | head -50 || true
+            echo ""
+            echo "=========================================="
+            echo "Last 300 lines of full log:"
+            echo "=========================================="
+            tail -300 build-sim.log
+            exit $EXIT
+          fi
+      - name: Build unsigned archive (Sideload)
+        script: |
+          set +e
+          set -o pipefail
+          # Release archive — bật wholemodule cho Swift để compile nhanh hơn
+          # incremental khi rebuild full module (1 file lớn đổi → recompile
+          # toàn module). Skip index store + plugin validation giống Debug.
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/Usagi.xcarchive \
+            -parallelizeTargets \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SWIFT_COMPILATION_MODE=wholemodule \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" 2>&1 | tee build-archive.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            echo ""
+            echo "=========================================="
+            echo "ARCHIVE FAILED (exit $EXIT) — error: lines:"
+            echo "=========================================="
+            grep -nE "error:" build-archive.log | head -200 || echo "(no 'error:' substring found)"
+            echo ""
+            echo "=========================================="
+            echo "Last 300 lines of full log:"
+            echo "=========================================="
+            tail -300 build-archive.log
+            exit $EXIT
+          fi
+      - name: Package unsigned IPA
+        script: |
+          mkdir -p build/Payload
+          cp -r build/Usagi.xcarchive/Products/Applications/Usagi.app build/Payload/
+          cd build
+          # Filename convention:
+          #   - usagi.ipa            ← canonical, stable URL
+          #   - usagi-v0.1.0.ipa     ← versioned, admin tracking
+          # Build number embedded ở CFBundleVersion (Info.plist), không
+          #   show ở filename để giữ URL ngắn gọn.
+          zip -qry usagi.ipa Payload
+          cp usagi.ipa "usagi-v${VERSION}.ipa"
+          rm -rf Payload
+          ls -lh *.ipa
+    artifacts:
+      # App Preview — narrow glob: ONLY freshly-built simulator product.
+      # `Build/Products/Debug-iphonesimulator/*.app` exclude Intermediates +
+      # archive iphoneos slice (không chạy được trong Simulator).
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/Products/Debug-iphonesimulator/*.app
+      # Sideload IPA (canonical + versioned) + archive cho dSYM
+      - build/usagi.ipa
+      - build/usagi-v*.ipa
+      - build/Usagi.xcarchive
+      # Build logs cho debug crash sau khi App Preview launch
+      - build-sim.log
+      - build-archive.log
