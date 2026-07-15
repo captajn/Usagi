@@ -32,7 +32,7 @@ struct UsagiApp: App {
                     dependencies.navigation.handle(link)
                 }
             }
-            .onChange(of: scenePhase) { _, phase in
+            .onChange(of: scenePhase) { phase in
                 if phase == .background {
                     dependencies.appLock.lock()
                 }
