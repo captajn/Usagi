@@ -15,8 +15,8 @@ final class AppDependencies: ObservableObject {
     let backupService: BackupService
     let syncService: SyncService
     let cbzImporter: CBZImporter
-    let settings: UserDefaultsSettingsStore
-    let appLock: AppLockService
+    var settings: UserDefaultsSettingsStore
+    var appLock: AppLockService
     let navigation: NavigationStore
     let database: AppDatabase
 
