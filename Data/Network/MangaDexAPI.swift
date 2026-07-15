@@ -82,7 +82,7 @@ struct MangaDexAPI {
             MangaDexPage(
                 index: index,
                 url: "\(response.baseUrl)/data/\(response.chapter.hash)/\(filename)",
-                previewURL: "\(response.baseUrl)/data/\(response.chapter.hash)/\(response.chapter.dataVeryLow?[safe: index] ?? filename)"
+                previewURL: "\(response.baseUrl)/data/\(response.chapter.hash)/\(index < (response.chapter.dataVeryLow?.count ?? 0) ? (response.chapter.dataVeryLow?[index] ?? filename) : filename)"
             )
         }
     }
