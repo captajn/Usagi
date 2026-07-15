@@ -200,7 +200,6 @@ struct ShelfWidgetView: View {
 
 // MARK: - Widget Bundle
 
-@main
 struct UsagiWidgetBundle: WidgetBundle {
     var body: some Widget {
         RecentWidget()

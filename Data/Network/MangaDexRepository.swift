@@ -68,12 +68,6 @@ actor MangaDexRepository: MangaRepository {
 
 // MARK: - Mapping
 
-private struct MangaDexPage {
-    let index: Int
-    let url: String
-    let previewURL: String?
-}
-
 extension MangaDexManga {
     func toManga(sourceID: String) -> Manga {
         let idInt = Int64(id.hashValue)

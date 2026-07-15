@@ -264,3 +264,11 @@ struct MangaDexAtHomeChapter: Decodable {
 struct MangaDexTagResponse: Decodable {
     let data: [MangaDexTag]
 }
+
+// MARK: - Page helper (used by MangaDexRepository)
+
+struct MangaDexPage {
+    let index: Int
+    let url: String
+    let previewURL: String?
+}
