@@ -95,8 +95,8 @@ private struct ReaderScreen: View {
             viewModel.teardown()
             autoScrollTask?.cancel()
         }
-        .onChange(of: settings.autoScrollEnabled) { _, _ in restartAutoScroll() }
-        .onChange(of: settings.autoScrollSeconds) { _, _ in restartAutoScroll() }
+        .onChange(of: settings.autoScrollEnabled) { _ in restartAutoScroll() }
+        .onChange(of: settings.autoScrollSeconds) { _ in restartAutoScroll() }
         .sheet(isPresented: $showSettings) {
             NavigationStack {
                 ReaderSettingsSheet(settings: settings)
