@@ -33,7 +33,7 @@ enum SortOrder: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-struct SavedFilter: Identifiable, Hashable, Codable, Sendable {
+struct SavedFilter: Identifiable, Codable, Sendable {
     let id: UUID
     var name: String
     var filter: MangaListFilter
