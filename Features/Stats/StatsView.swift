@@ -116,6 +116,6 @@ struct StatsView: View {
     }
 
     private func loadStats() async {
-        records = await dependencies.statsRepository.stats(for: period, db: dependencies.database)
+        records = await dependencies.statsRepository.stats(for: period)
     }
 }
