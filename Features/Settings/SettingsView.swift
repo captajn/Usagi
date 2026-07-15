@@ -60,6 +60,12 @@ private struct SettingsScreen: View {
 
             Section("Nội dung") {
                 NavigationLink {
+                    SourceManageView()
+                        .environmentObject(dependencies)
+                } label: {
+                    Label("Quản lý nguồn", systemImage: "gearshape.2")
+                }
+                NavigationLink {
                     SourcesSettingsView()
                 } label: {
                     Label("Nguồn", systemImage: "globe")
