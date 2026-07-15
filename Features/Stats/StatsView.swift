@@ -1,5 +1,4 @@
 import SwiftUI
-import Charts
 
 struct StatsView: View {
     @EnvironmentObject private var dependencies: AppDependencies
@@ -34,23 +33,24 @@ struct StatsView: View {
                 }
             } else {
                 Section("Thời gian đọc") {
-                    Chart(records.prefix(8)) { record in
-                        SectorMark(
-                            angle: .value("Thời gian", record.duration),
-                            innerRadius: .ratio(0.6)
-                        )
-                        .foregroundStyle(by: .value("Truyện", record.manga?.title ?? "Không rõ"))
-                        .annotation(position: .overlay) {
-                            if record.percentage >= 5 {
-                                Text("\(Int(record.percentage))%")
-                                    .font(.caption2)
-                                    .foregroundStyle(.white)
-                            }
+                    ForEach(records.prefix(8)) { record in
+                        HStack {
+                            Text(record.manga?.title ?? "Không rõ")
+                                .font(.subheadline)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(record.displayTime)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
+                        .background(
+                            GeometryReader { geo in
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(UsagiTheme.accent.opacity(0.15))
+                                    .frame(width: geo.size.width * (record.percentage / 100))
+                            }
+                        )
                     }
-                    .chartLegend(position: .bottom)
-                    .frame(height: 220)
-                    .listRowInsets(EdgeInsets())
                 }
 
                 Section("Theo truyện") {

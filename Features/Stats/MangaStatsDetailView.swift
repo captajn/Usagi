@@ -1,5 +1,4 @@
 import SwiftUI
-import Charts
 
 struct MangaStatsDetailView: View {
     let manga: Manga
@@ -26,15 +25,24 @@ struct MangaStatsDetailView: View {
 
             if !timeline.isEmpty {
                 Section("Trang mỗi ngày") {
-                    Chart(timeline, id: \.date) { item in
-                        BarMark(
-                            x: .value("Ngày", item.date, unit: .day),
-                            y: .value("Trang", item.pages)
+                    ForEach(timeline, id: \.date) { item in
+                        HStack {
+                            Text(item.date, style: .date)
+                                .font(.caption)
+                            Spacer()
+                            Text("\(item.pages) trang")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .background(
+                            GeometryReader { geo in
+                                let maxPages = Double(timeline.map(\.pages).max() ?? 1)
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(UsagiTheme.accent.opacity(0.15))
+                                    .frame(width: geo.size.width * (Double(item.pages) / maxPages))
+                            }
                         )
-                        .foregroundStyle(UsagiTheme.accent)
                     }
-                    .frame(height: 200)
-                    .listRowInsets(EdgeInsets())
                 }
             }
         }
