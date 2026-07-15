@@ -3,7 +3,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-final class UserDefaultsSettingsStore: SettingsStore {
+final class UserDefaultsSettingsStore: SettingsStore, ObservableObject {
     private let defaults: UserDefaults
     private enum Key {
         static let readerMode = "settings.readerMode"
