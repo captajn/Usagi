@@ -24,15 +24,12 @@ struct FilterSheetView: View {
 
                 Section("Sắp xếp") {
                     ForEach(SortOrder.allCases) { order in
-                        Button {
-                            filter.sortOrder = order
-                        } label: {
+                        Button { filter.sortOrder = order } label: {
                             HStack {
                                 Text(order.displayName)
                                 Spacer()
                                 if filter.sortOrder == order {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(UsagiTheme.accent)
+                                    Image(systemName: "checkmark").foregroundStyle(UsagiTheme.accent)
                                 }
                             }
                         }
@@ -44,42 +41,34 @@ struct FilterSheetView: View {
                     if !availableTags.isEmpty {
                         TextField("Tìm thể loại...", text: $searchText)
                         ForEach(filteredTags) { tag in
-                            Button {
-                                toggleTag(tag)
-                            } label: {
+                            Button { toggleTag(tag) } label: {
                                 HStack {
                                     Text(tag.title)
                                     Spacer()
                                     if filter.tags.contains(where: { $0.id == tag.id }) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(UsagiTheme.accent)
+                                        Image(systemName: "checkmark.circle.fill").foregroundStyle(UsagiTheme.accent)
                                     }
                                 }
                             }
                             .foregroundStyle(.primary)
                         }
                     } else {
-                        Text("Chưa có thể loại")
-                            .foregroundStyle(.secondary)
+                        Text("Chưa có thể loại").foregroundStyle(.secondary)
                     }
                 }
 
                 Section("Nội dung") {
-                    ForEach(ContentRating.allCases.filter { $0 != .unknown }) { rating in
-                        Toggle(rating.displayName, isOn: Binding(
-                            get: { filter.contentRating.contains(rating) },
-                            set: { $0 ? filter.contentRating.append(rating) : filter.contentRating.removeAll { $0 == rating } }
-                        ))
-                    }
+                    ratingToggle(rating: .safe)
+                    ratingToggle(rating: .suggestive)
+                    ratingToggle(rating: .adult)
                 }
 
                 Section("Trạng thái") {
-                    ForEach(MangaPublicationState.allCases) { state in
-                        Toggle(state.displayName, isOn: Binding(
-                            get: { filter.states.contains(state) },
-                            set: { $0 ? filter.states.append(state) : filter.states.removeAll { $0 == state } }
-                        ))
-                    }
+                    stateToggle(state: .ongoing)
+                    stateToggle(state: .finished)
+                    stateToggle(state: .abandoned)
+                    stateToggle(state: .paused)
+                    stateToggle(state: .upcoming)
                 }
 
                 Section("Năm") {
@@ -94,13 +83,8 @@ struct FilterSheetView: View {
                 if !savedFilters.isEmpty {
                     Section("Bộ lọc đã lưu") {
                         ForEach(savedFilters) { saved in
-                            Button {
-                                filter = saved.filter
-                            } label: {
-                                HStack {
-                                    Text(saved.name)
-                                    Spacer()
-                                }
+                            Button { filter = saved.filter } label: {
+                                HStack { Text(saved.name); Spacer() }
                             }
                             .foregroundStyle(.primary)
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
@@ -114,33 +98,23 @@ struct FilterSheetView: View {
                 }
 
                 Section {
-                    Button("Lưu bộ lọc hiện tại") {
-                        showSaveDialog = true
-                    }
-
-                    Button("Đặt lại bộ lọc", role: .destructive) {
-                        filter = .empty
-                    }
+                    Button("Lưu bộ lọc hiện tại") { showSaveDialog = true }
+                    Button("Đặt lại bộ lọc", role: .destructive) { filter = .empty }
                 }
             }
             .navigationTitle("Bộ lọc")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Đặt lại") { filter = .empty }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Xong") { dismiss() }
-                }
+                ToolbarItem(placement: .cancellationAction) { Button("Đặt lại") { filter = .empty } }
+                ToolbarItem(placement: .confirmationAction) { Button("Xong") { dismiss() } }
             }
             .alert("Lưu bộ lọc", isPresented: $showSaveDialog) {
                 TextField("Tên bộ lọc", text: $filterName)
                 Button("Lưu") {
-                    if !filterName.isEmpty {
-                        savedFilters.append(SavedFilter(name: filterName, filter: filter))
-                        savePresets()
-                        filterName = ""
-                    }
+                    guard !filterName.isEmpty else { return }
+                    savedFilters.append(SavedFilter(name: filterName, filter: filter))
+                    savePresets()
+                    filterName = ""
                 }
                 Button("Huỷ", role: .cancel) {}
             } message: {
@@ -156,6 +130,30 @@ struct FilterSheetView: View {
         } else {
             filter.tags.append(tag)
         }
+    }
+
+    @ViewBuilder
+    private func ratingToggle(rating: ContentRating) -> some View {
+        let isOn = filter.contentRating.contains(rating)
+        Toggle(rating.displayName, isOn: Binding(
+            get: { isOn },
+            set: { newValue in
+                if newValue { filter.contentRating.append(rating) }
+                else { filter.contentRating.removeAll { $0 == rating } }
+            }
+        ))
+    }
+
+    @ViewBuilder
+    private func stateToggle(state: MangaPublicationState) -> some View {
+        let isOn = filter.states.contains(state)
+        Toggle(state.displayName, isOn: Binding(
+            get: { isOn },
+            set: { newValue in
+                if newValue { filter.states.append(state) }
+                else { filter.states.removeAll { $0 == state } }
+            }
+        ))
     }
 
     private func loadPresets() {
