@@ -2,7 +2,7 @@ name: Usagi
 options:
   bundleIdPrefix: org.draken
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "16.0"
   createIntermediateGroups: true
   generateEmptyDirectories: true
 settings:

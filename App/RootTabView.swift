@@ -105,7 +105,4 @@ enum AppTab: String, Hashable, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-#Preview {
-    RootTabView()
-        .environmentObject(AppDependencies(preview: true))
-}
+

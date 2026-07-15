@@ -8,23 +8,30 @@ struct EmptyStateView: View {
     var action: (() -> Void)?
 
     var body: some View {
-        ContentUnavailableView {
-            Label(title, systemImage: systemImage)
-        } description: {
+        VStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+            Text(title)
+                .font(.headline)
             if let message {
                 Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
-        } actions: {
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
                     .buttonStyle(.borderedProminent)
             }
         }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
 struct LoadingView: View {
-    var message: String = "Loading…"
+    var message: String = "Đang tải…"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -50,7 +57,7 @@ struct ErrorBanner: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             if let retry {
-                Button("Retry", action: retry)
+                Button("Thử lại", action: retry)
                     .buttonStyle(.bordered)
             }
         }
