@@ -33,7 +33,7 @@ final class AppDependencies: ObservableObject {
         self.appLock = AppLockService()
         self.navigation = NavigationStore()
 
-        let remote = MockMangaRepository()
+        let remote = MangaDexRepository()
         self.mangaRepository = CachingMangaRepository(remote: remote, db: db)
         self.libraryRepository = PersistentLibraryRepository(db: db)
         self.historyRepository = PersistentHistoryRepository(db: db)
