@@ -16,16 +16,10 @@ struct UsagiTimelineProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> Void) {
-        Task {
-            let db = AppDatabase.shared
-            try? await db.prepare()
-            let history = db.historyEntries()
-            let entries = history.prefix(5).map { $0.manga }
-            let entry = SimpleEntry(date: Date(), manga: entries, type: .recent)
-            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-            completion(timeline)
-        }
+        let entry = SimpleEntry(date: Date(), manga: [], type: .recent)
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+        completion(timeline)
     }
 }
 
