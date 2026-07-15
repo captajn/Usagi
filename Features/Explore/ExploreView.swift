@@ -6,7 +6,7 @@ struct ExploreView: View {
 
     var body: some View {
         content
-            .navigationTitle(String(localized: "Explore"))
+            .navigationTitle("Khám phá")
             .navigationDestination(for: Int64.self) { id in
                 MangaDetailView(mangaID: id)
             }
@@ -17,11 +17,11 @@ struct ExploreView: View {
                     } label: {
                         Image(systemName: "magnifyingglass")
                     }
-                    .accessibilityLabel(String(localized: "Search"))
+                    .accessibilityLabel("Tìm kiếm")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button(String(localized: "All sources")) {
+                        Button("Tất cả nguồn") {
                             Task { await viewModel?.selectSource(nil) }
                         }
                         Divider()
@@ -40,7 +40,7 @@ struct ExploreView: View {
                     } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
-                    .accessibilityLabel(String(localized: "Filter sources"))
+                    .accessibilityLabel("Lọc nguồn")
                 }
             }
             .task {
@@ -48,7 +48,6 @@ struct ExploreView: View {
                 await viewModelHolder.viewModel?.load()
                 if let pending = dependencies.navigation.pendingMangaID {
                     dependencies.navigation.pendingMangaID = nil
-                    // navigation handled by user via list; stash for future path
                     _ = pending
                 }
             }
@@ -70,19 +69,19 @@ struct ExploreView: View {
                         VStack(alignment: .leading, spacing: 20) {
                             if let sourceID = viewModel.selectedSourceID,
                                let source = viewModel.sources.first(where: { $0.id == sourceID }) {
-                                Text(String(localized: "Source: \(source.title)"))
+                                Text("Nguồn: \(source.title)")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .padding(.horizontal)
                             }
 
-                            shelf(title: String(localized: "Popular"), items: viewModel.popular)
-                            shelf(title: String(localized: "Latest"), items: viewModel.latest)
+                            shelf(title: "Phổ biến", items: viewModel.popular)
+                            shelf(title: "Mới nhất", items: viewModel.latest)
 
                             NavigationLink {
                                 SuggestionsView()
                             } label: {
-                                Label(String(localized: "See suggestions"), systemImage: "sparkles")
+                                Label("Xem gợi ý", systemImage: "sparkles")
                                     .padding(.horizontal)
                             }
                         }

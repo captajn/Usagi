@@ -12,8 +12,8 @@ struct SuggestionsView: View {
             } else if items.isEmpty {
                 EmptyStateView(
                     systemImage: "sparkles",
-                    title: String(localized: "No suggestions yet"),
-                    message: String(localized: "Read more titles so we can recommend similar manga.")
+                    title: "Chưa có gợi ý",
+                    message: "Đọc thêm truyện để chúng tôi gợi ý truyện tương tự."
                 )
             } else {
                 ScrollView {
@@ -29,7 +29,7 @@ struct SuggestionsView: View {
                 }
             }
         }
-        .navigationTitle(String(localized: "Suggestions"))
+        .navigationTitle("Gợi ý")
         .task { await load() }
     }
 

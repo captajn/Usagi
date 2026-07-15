@@ -10,7 +10,7 @@ struct ScrobblingSettingsView: View {
     var body: some View {
         List {
             Section {
-                Text(String(localized: "Link tracking services to scrobble reading progress. OAuth uses ASWebAuthenticationSession in production; MVP uses a username link stub."))
+                Text("Liên kết dịch vụ theo dõi để ghi lại tiến độ đọc. OAuth sử dụng ASWebAuthenticationSession; MVP dùng liên kết tên người dùng.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -20,9 +20,9 @@ struct ScrobblingSettingsView: View {
                     Spacer()
                     if account.isLinked {
                         VStack(alignment: .trailing) {
-                            Text(account.username ?? "linked")
+                            Text(account.username ?? "đã liên kết")
                                 .font(.caption)
-                            Button(String(localized: "Unlink"), role: .destructive) {
+                            Button("Hủy liên kết", role: .destructive) {
                                 Task {
                                     try? await dependencies.scrobblingService.unlink(kind: account.kind)
                                     await reload()
@@ -31,7 +31,7 @@ struct ScrobblingSettingsView: View {
                             .font(.caption)
                         }
                     } else {
-                        Button(String(localized: "Link")) {
+                        Button("Liên kết") {
                             linkingKind = account.kind
                             username = ""
                         }
@@ -39,17 +39,17 @@ struct ScrobblingSettingsView: View {
                 }
             }
         }
-        .navigationTitle(String(localized: "Scrobbling"))
+        .navigationTitle("Scrobbling")
         .task { await reload() }
         .alert(
-            String(localized: "Link \(linkingKind?.displayName ?? "")"),
+            "Liên kết \(linkingKind?.displayName ?? "")",
             isPresented: Binding(
                 get: { linkingKind != nil },
                 set: { if !$0 { linkingKind = nil } }
             )
         ) {
-            TextField(String(localized: "Username"), text: $username)
-            Button(String(localized: "Connect")) {
+            TextField("Tên người dùng", text: $username)
+            Button("Kết nối") {
                 guard let kind = linkingKind else { return }
                 Task {
                     try? await dependencies.scrobblingService.link(kind: kind, username: username.isEmpty ? "user" : username)
@@ -57,7 +57,7 @@ struct ScrobblingSettingsView: View {
                     await reload()
                 }
             }
-            Button(String(localized: "Cancel"), role: .cancel) { linkingKind = nil }
+            Button("Huỷ", role: .cancel) { linkingKind = nil }
         }
     }
 

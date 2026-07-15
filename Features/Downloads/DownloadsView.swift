@@ -12,13 +12,13 @@ struct DownloadsView: View {
             if viewModel.items.isEmpty && viewModel.localPackages.isEmpty {
                 EmptyStateView(
                     systemImage: "arrow.down.circle",
-                    title: String(localized: "No downloads"),
-                    message: String(localized: "Download chapters from manga details, or import a CBZ/ZIP.")
+                    title: "Chưa có tải xuống",
+                    message: "Tải chương từ chi tiết truyện, hoặc nhập file CBZ/ZIP."
                 )
             } else {
                 List {
                     if !viewModel.items.isEmpty {
-                        Section(String(localized: "Queue")) {
+                        Section("Hàng đợi") {
                             ForEach(viewModel.items) { item in
                                 DownloadRow(item: item) {
                                     Task { await viewModel.pauseOrResume(item, deps: dependencies) }
@@ -29,12 +29,12 @@ struct DownloadsView: View {
                         }
                     }
                     if !viewModel.localPackages.isEmpty {
-                        Section(String(localized: "Offline / Imported")) {
+                        Section("Offline / Đã nhập") {
                             ForEach(viewModel.localPackages) { pack in
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(pack.mangaTitle).font(.headline)
                                     Text(pack.chapterTitle).font(.subheadline).foregroundStyle(.secondary)
-                                    Text("\(pack.pagePaths.count) pages · \(pack.source.rawValue)")
+                                    Text("\(pack.pagePaths.count) trang · \(pack.source.rawValue)")
                                         .font(.caption2)
                                         .foregroundStyle(.tertiary)
                                 }
@@ -45,13 +45,13 @@ struct DownloadsView: View {
                 }
             }
         }
-        .navigationTitle(String(localized: "Downloads"))
+        .navigationTitle("Tải xuống")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     importing = true
                 } label: {
-                    Label(String(localized: "Import CBZ"), systemImage: "square.and.arrow.down")
+                    Label("Nhập CBZ", systemImage: "square.and.arrow.down")
                 }
             }
         }
@@ -71,7 +71,7 @@ struct DownloadsView: View {
                 }
             }
         }
-        .alert("Import failed", isPresented: Binding(
+        .alert("Nhập thất bại", isPresented: Binding(
             get: { importError != nil },
             set: { if !$0 { importError = nil } }
         )) {
@@ -108,12 +108,12 @@ private struct DownloadRow: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 if item.status == .downloading || item.status == .queued {
-                    Button(String(localized: "Pause"), action: onPauseResume)
+                    Button("Tạm dừng", action: onPauseResume)
                 } else if item.status == .paused || item.status == .failed {
-                    Button(String(localized: "Resume"), action: onPauseResume)
+                    Button("Tiếp tục", action: onPauseResume)
                 }
                 if item.status != .completed {
-                    Button(String(localized: "Cancel"), role: .destructive, action: onCancel)
+                    Button("Huỷ", role: .destructive, action: onCancel)
                 }
             }
             .font(.caption)

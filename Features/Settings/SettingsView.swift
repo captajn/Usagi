@@ -16,92 +16,97 @@ private struct SettingsScreen: View {
 
     var body: some View {
         List {
-            Section(String(localized: "Browse")) {
+            Section("Duyệt") {
                 NavigationLink {
                     SearchView()
                 } label: {
-                    Label(String(localized: "Search"), systemImage: "magnifyingglass")
+                    Label("Tìm kiếm", systemImage: "magnifyingglass")
                 }
                 NavigationLink {
                     SuggestionsView()
                 } label: {
-                    Label(String(localized: "Suggestions"), systemImage: "sparkles")
+                    Label("Gợi ý", systemImage: "sparkles")
                 }
                 Button {
                     dependencies.navigation.showDownloads = true
                 } label: {
-                    Label(String(localized: "Downloads & import"), systemImage: "arrow.down.circle")
+                    Label("Tải xuống & nhập", systemImage: "arrow.down.circle")
                 }
                 Button {
                     dependencies.navigation.showBookmarks = true
                 } label: {
-                    Label(String(localized: "Bookmarks"), systemImage: "bookmark")
+                    Label("Đánh dấu", systemImage: "bookmark")
                 }
             }
 
-            Section(String(localized: "Appearance")) {
-                Picker(String(localized: "Theme"), selection: $dependencies.settings.colorSchemePreference) {
+            Section("Giao diện") {
+                Picker("Giao diện", selection: $dependencies.settings.colorSchemePreference) {
                     ForEach(ColorSchemePreference.allCases) { pref in
                         Text(pref.displayName).tag(pref)
                     }
                 }
             }
 
-            Section(String(localized: "Reader")) {
-                Picker(String(localized: "Reading mode"), selection: $dependencies.settings.readerMode) {
+            Section("Trình đọc") {
+                Picker("Chế độ đọc", selection: $dependencies.settings.readerMode) {
                     ForEach(ReaderMode.allCases) { mode in
                         Label(mode.displayName, systemImage: mode.systemImage).tag(mode)
                     }
                 }
-                Toggle(String(localized: "Keep screen on"), isOn: $dependencies.settings.keepScreenOn)
-                Toggle(String(localized: "Incognito mode"), isOn: $dependencies.settings.incognitoMode)
-                Toggle(String(localized: "Auto-scroll"), isOn: $dependencies.settings.autoScrollEnabled)
+                Toggle("Giữ màn hình sáng", isOn: $dependencies.settings.keepScreenOn)
+                Toggle("Chế độ ẩn danh", isOn: $dependencies.settings.incognitoMode)
+                Toggle("Tự động cuộn", isOn: $dependencies.settings.autoScrollEnabled)
             }
 
-            Section(String(localized: "Content")) {
+            Section("Nội dung") {
                 NavigationLink {
                     SourcesSettingsView()
                 } label: {
-                    Label(String(localized: "Sources"), systemImage: "globe")
+                    Label("Nguồn", systemImage: "globe")
                 }
-                Toggle(String(localized: "Data saver"), isOn: $dependencies.settings.dataSaver)
-                Toggle(String(localized: "Show NSFW sources"), isOn: $dependencies.settings.showNSFW)
+                Toggle("Tiết kiệm dữ liệu", isOn: $dependencies.settings.dataSaver)
+                Toggle("Hiển thị nguồn NSFW", isOn: $dependencies.settings.showNSFW)
             }
 
-            Section(String(localized: "Services")) {
+            Section("Dịch vụ") {
                 NavigationLink {
                     ScrobblingSettingsView()
                 } label: {
-                    Label(String(localized: "Scrobbling"), systemImage: "link")
+                    Label("Scrobbling", systemImage: "link")
                 }
                 NavigationLink {
                     SyncSettingsView()
                 } label: {
-                    Label(String(localized: "Sync"), systemImage: "arrow.triangle.2.circlepath")
+                    Label("Đồng bộ", systemImage: "arrow.triangle.2.circlepath")
                 }
                 NavigationLink {
                     BackupSettingsView()
                 } label: {
-                    Label(String(localized: "Backup"), systemImage: "externaldrive")
+                    Label("Sao lưu", systemImage: "externaldrive")
+                }
+                NavigationLink {
+                    StatsView()
+                } label: {
+                    Label("Thống kê", systemImage: "chart.pie")
                 }
             }
 
-            Section(String(localized: "Security")) {
+            Section("Bảo mật") {
                 Toggle(
-                    String(localized: "App lock (\(dependencies.appLock.biometryLabel))"),
+                    "Khóa ứng dụng (\(dependencies.appLock.biometryLabel))",
                     isOn: $dependencies.appLock.isEnabled
                 )
             }
 
-            Section(String(localized: "Storage")) {
-                Button(String(localized: "Clear image cache")) {
+            Section("Lưu trữ") {
+                Button("Xoá bộ nhớ đệm ảnh") {
                     Task {
                         await ImagePipeline.shared.clearCache()
                         try? await dependencies.database.clearCache()
                         cacheCleared = true
                     }
                 }
-                Button(String(localized: "Clear reading history"), role: .destructive) {
+                Button("Xoá lịch sử đọc", role: .destructive) {
                     Task {
                         await dependencies.historyRepository.clear()
                         historyCleared = true
@@ -109,25 +114,25 @@ private struct SettingsScreen: View {
                 }
             }
 
-            Section(String(localized: "About")) {
-                LabeledContent(String(localized: "App"), value: "Usagi iOS")
-                LabeledContent(String(localized: "Version"), value: "0.1.0")
-                LabeledContent(String(localized: "Platform"), value: "SwiftUI · pure Swift")
+            Section("Giới thiệu") {
+                LabeledContent("Ứng dụng", value: "Usagi iOS")
+                LabeledContent("Phiên bản", value: "0.1.0")
+                LabeledContent("Nền tảng", value: "SwiftUI · pure Swift")
                 NavigationLink {
                     PrivacyView()
                 } label: {
-                    Label(String(localized: "Privacy"), systemImage: "hand.raised")
+                    Label("Quyền riêng tư", systemImage: "hand.raised")
                 }
-                Text(String(localized: "Free & open-source manga reader. Content comes from external sources / demos — Usagi does not host manga."))
+                Text("Ứng dụng đọc manga miễn phí mã nguồn mở. Nội dung đến từ nguồn bên ngoài / demo — Usagi không lưu trữ manga.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle(String(localized: "Settings"))
-        .alert(String(localized: "Cache cleared"), isPresented: $cacheCleared) {
+        .navigationTitle("Cài đặt")
+        .alert("Đã xoá bộ nhớ đệm", isPresented: $cacheCleared) {
             Button("OK", role: .cancel) {}
         }
-        .alert(String(localized: "History cleared"), isPresented: $historyCleared) {
+        .alert("Đã xoá lịch sử", isPresented: $historyCleared) {
             Button("OK", role: .cancel) {}
         }
     }
@@ -137,18 +142,18 @@ struct PrivacyView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text(String(localized: "Privacy"))
+                Text("Quyền riêng tư")
                     .font(.title2.weight(.bold))
-                Text(String(localized: "Usagi does not include built-in manga content. Titles come from user-enabled sources, imports (CBZ), or demo fixtures."))
-                Text(String(localized: "Reading history, favourites, bookmarks and downloads stay on your device unless you enable Sync or export a backup."))
-                Text(String(localized: "Scrobbling and Sync only send data when you link an account. OAuth tokens are stored on-device."))
-                Text(String(localized: "No analytics SDK is bundled in this open-source build."))
-                Text(String(localized: "Photo library access is used only when you save a page from the reader."))
+                Text("Usagi không chứa nội dung manga có sẵn. Truyện đến từ nguồn người dùng bật, nhập (CBZ), hoặc demo.")
+                Text("Lịch sử đọc, yêu thích, đánh dấu và tải xuống đều lưu trên thiết bị của bạn trừ khi bạn bật Đồng bộ hoặc xuất sao lưu.")
+                Text("Scrobbling và Đồng bộ chỉ gửi dữ liệu khi bạn liên kết tài khoản. Token OAuth được lưu trên thiết bị.")
+                Text("Không có SDK phân tích nào được nhúng trong bản mã nguồn mở này.")
+                Text("Truy cập thư viện ảnh chỉ được sử dụng khi bạn lưu trang từ trình đọc.")
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .navigationTitle(String(localized: "Privacy"))
+        .navigationTitle("Quyền riêng tư")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

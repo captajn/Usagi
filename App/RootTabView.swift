@@ -37,31 +37,31 @@ struct RootTabView: View {
             NavigationStack {
                 ExploreView()
             }
-            .tabItem { Label(String(localized: "Explore"), systemImage: "safari") }
+            .tabItem { Label("Khám phá", systemImage: "safari") }
             .tag(AppTab.explore)
 
             NavigationStack {
                 LibraryView()
             }
-            .tabItem { Label(String(localized: "Library"), systemImage: "books.vertical") }
+            .tabItem { Label("Thư viện", systemImage: "books.vertical") }
             .tag(AppTab.library)
 
             NavigationStack {
                 HistoryView()
             }
-            .tabItem { Label(String(localized: "History"), systemImage: "clock.arrow.circlepath") }
+            .tabItem { Label("Lịch sử", systemImage: "clock.arrow.circlepath") }
             .tag(AppTab.history)
 
             NavigationStack {
                 TrackerView()
             }
-            .tabItem { Label(String(localized: "Updates"), systemImage: "bell") }
+            .tabItem { Label("Cập nhật", systemImage: "bell") }
             .tag(AppTab.tracker)
 
             NavigationStack {
                 SettingsView()
             }
-            .tabItem { Label(String(localized: "Settings"), systemImage: "gearshape") }
+            .tabItem { Label("Cài đặt", systemImage: "gearshape") }
             .tag(AppTab.settings)
         }
     }
@@ -76,15 +76,15 @@ struct iPadSplitShell: View {
                 get: { dependencies.navigation.selectedTab },
                 set: { if let v = $0 { dependencies.navigation.selectedTab = v } }
             )) {
-                Label(String(localized: "Explore"), systemImage: "safari").tag(AppTab.explore)
-                Label(String(localized: "Library"), systemImage: "books.vertical").tag(AppTab.library)
-                Label(String(localized: "History"), systemImage: "clock.arrow.circlepath").tag(AppTab.history)
-                Label(String(localized: "Updates"), systemImage: "bell").tag(AppTab.tracker)
-                Label(String(localized: "Search"), systemImage: "magnifyingglass").tag(AppTab.search)
-                Label(String(localized: "Settings"), systemImage: "gearshape").tag(AppTab.settings)
+                Label("Khám phá", systemImage: "safari").tag(AppTab.explore)
+                Label("Thư viện", systemImage: "books.vertical").tag(AppTab.library)
+                Label("Lịch sử", systemImage: "clock.arrow.circlepath").tag(AppTab.history)
+                Label("Cập nhật", systemImage: "bell").tag(AppTab.tracker)
+                Label("Tìm kiếm", systemImage: "magnifyingglass").tag(AppTab.search)
+                Label("Cài đặt", systemImage: "gearshape").tag(AppTab.settings)
             }
             .navigationTitle("Usagi")
-            .accessibilityLabel(String(localized: "Main navigation"))
+            .accessibilityLabel("Điều hướng chính")
         } detail: {
             NavigationStack {
                 switch dependencies.navigation.selectedTab {

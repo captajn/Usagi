@@ -18,7 +18,7 @@ private struct SearchScreen: View {
     var body: some View {
         Group {
             if viewModel.isLoading && viewModel.results.isEmpty {
-                LoadingView(message: "Searching…")
+                LoadingView(message: "Đang tìm…")
             } else if let error = viewModel.errorMessage, viewModel.results.isEmpty {
                 ErrorBanner(message: error) {
                     Task { await viewModel.search() }
@@ -26,14 +26,14 @@ private struct SearchScreen: View {
             } else if viewModel.didSearch && viewModel.results.isEmpty {
                 EmptyStateView(
                     systemImage: "magnifyingglass",
-                    title: "No results",
-                    message: "Try another title, author, or tag."
+                    title: "Không tìm thấy",
+                    message: "Thử tên khác, tác giả, hoặc thể loại."
                 )
             } else if !viewModel.didSearch {
                 EmptyStateView(
                     systemImage: "text.page.badge.magnifyingglass",
-                    title: "Search manga",
-                    message: "Find titles from enabled demo sources."
+                    title: "Tìm truyện",
+                    message: "Tìm truyện từ các nguồn demo đang bật."
                 )
             } else {
                 List(viewModel.results) { manga in
@@ -44,7 +44,7 @@ private struct SearchScreen: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle("Search")
+        .navigationTitle("Tìm kiếm")
         .navigationDestination(for: Int64.self) { id in
             MangaDetailView(mangaID: id)
         }
@@ -53,7 +53,7 @@ private struct SearchScreen: View {
                 get: { viewModel.query },
                 set: { viewModel.onQueryChanged($0) }
             ),
-            prompt: "Title, author, tag…"
+            prompt: "Tên, tác giả, thể loại…"
         )
     }
 }

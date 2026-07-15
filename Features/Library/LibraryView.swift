@@ -24,8 +24,8 @@ private struct LibraryScreen: View {
             } else if viewModel.items.isEmpty {
                 EmptyStateView(
                     systemImage: "books.vertical",
-                    title: String(localized: "Library is empty"),
-                    message: String(localized: "Add manga from the detail screen with the heart button.")
+                    title: "Thư viện trống",
+                    message: "Thêm truyện từ màn hình chi tiết bằng nút trái tim."
                 )
             } else {
                 ScrollView {
@@ -41,14 +41,14 @@ private struct LibraryScreen: View {
                 }
             }
         }
-        .navigationTitle(String(localized: "Library"))
+        .navigationTitle("Thư viện")
         .navigationDestination(for: Int64.self) { id in
             MangaDetailView(mangaID: id)
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(String(localized: "All favourites")) {
+                    Button("Tất cả yêu thích") {
                         Task { await viewModel.selectCategory(nil) }
                     }
                     Divider()
@@ -64,7 +64,7 @@ private struct LibraryScreen: View {
                         }
                     }
                     Divider()
-                    Button(String(localized: "New category…")) {
+                    Button("Danh mục mới…") {
                         showNewCategory = true
                     }
                 } label: {
@@ -72,15 +72,15 @@ private struct LibraryScreen: View {
                 }
             }
         }
-        .alert(String(localized: "New category"), isPresented: $showNewCategory) {
-            TextField(String(localized: "Name"), text: $newCategoryName)
-            Button(String(localized: "Create")) {
+        .alert("Danh mục mới", isPresented: $showNewCategory) {
+            TextField("Tên", text: $newCategoryName)
+            Button("Tạo") {
                 Task {
                     _ = await viewModel.createCategory(newCategoryName)
                     newCategoryName = ""
                 }
             }
-            Button(String(localized: "Cancel"), role: .cancel) {}
+            Button("Huỷ", role: .cancel) {}
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }

@@ -14,13 +14,13 @@ struct AppLockGateView: View {
             Text("Usagi")
                 .font(.largeTitle.weight(.bold))
 
-            Text(String(localized: "Unlock with \(dependencies.appLock.biometryLabel)"))
+            Text("Mở khóa bằng \(dependencies.appLock.biometryLabel)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             if failed {
-                Text(String(localized: "Authentication failed. Try again."))
+                Text("Xác thực thất bại. Thử lại.")
                     .font(.footnote)
                     .foregroundStyle(.red)
             }
@@ -31,11 +31,8 @@ struct AppLockGateView: View {
                     failed = !ok
                 }
             } label: {
-                Label(
-                    String(localized: "Unlock"),
-                    systemImage: "faceid"
-                )
-                .frame(maxWidth: 220)
+                Label("Mở khóa", systemImage: "faceid")
+                    .frame(maxWidth: 220)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)

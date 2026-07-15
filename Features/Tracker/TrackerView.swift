@@ -11,8 +11,8 @@ struct TrackerView: View {
             } else if viewModel.entries.isEmpty {
                 EmptyStateView(
                     systemImage: "bell.slash",
-                    title: String(localized: "No tracked manga"),
-                    message: String(localized: "Track a title from its detail screen to see chapter updates here.")
+                    title: "Chưa theo dõi truyện nào",
+                    message: "Theo dõi truyện từ màn hình chi tiết để xem cập nhật chương ở đây."
                 )
             } else {
                 List {
@@ -26,11 +26,11 @@ struct TrackerView: View {
                                         .font(.body.weight(.semibold))
                                         .lineLimit(2)
                                     if entry.hasUpdates {
-                                        Text(String(localized: "\(entry.newChapters) new chapter(s)"))
+                                        Text("\(entry.newChapters) chương mới")
                                             .font(.caption.weight(.semibold))
                                             .foregroundStyle(.orange)
                                     } else {
-                                        Text(String(localized: "Up to date · \(entry.manga.chapterCount) ch"))
+                                        Text("Đã cập nhật · \(entry.manga.chapterCount) ch")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
@@ -41,14 +41,14 @@ struct TrackerView: View {
                             }
                         }
                         .swipeActions {
-                            Button(String(localized: "Seen")) {
+                            Button("Đã xem") {
                                 Task { await viewModel.markSeen(entry, deps: dependencies) }
                             }
                             .tint(.blue)
                             Button(role: .destructive) {
                                 Task { await viewModel.untrack(entry, deps: dependencies) }
                             } label: {
-                                Label(String(localized: "Remove"), systemImage: "trash")
+                                Label("Bỏ theo dõi", systemImage: "trash")
                             }
                         }
                     }
@@ -56,7 +56,7 @@ struct TrackerView: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle(String(localized: "Updates"))
+        .navigationTitle("Cập nhật")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

@@ -23,8 +23,8 @@ private struct HistoryScreen: View {
             } else if viewModel.entries.isEmpty {
                 EmptyStateView(
                     systemImage: "clock",
-                    title: String(localized: "No reading history"),
-                    message: String(localized: "Titles you open will appear here.")
+                    title: "Chưa có lịch sử đọc",
+                    message: "Truyện bạn mở sẽ xuất hiện ở đây."
                 )
             } else {
                 List {
@@ -39,7 +39,7 @@ private struct HistoryScreen: View {
                             Button(role: .destructive) {
                                 Task { await viewModel.remove(entry) }
                             } label: {
-                                Label(String(localized: "Delete"), systemImage: "trash")
+                                Label("Xoá", systemImage: "trash")
                             }
                         }
                     }
@@ -47,28 +47,28 @@ private struct HistoryScreen: View {
                 .listStyle(.plain)
             }
         }
-        .navigationTitle(String(localized: "History"))
+        .navigationTitle("Lịch sử")
         .navigationDestination(for: Int64.self) { id in
             MangaDetailView(mangaID: id)
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !viewModel.entries.isEmpty {
-                    Button(String(localized: "Clear"), role: .destructive) {
+                    Button("Xoá tất cả", role: .destructive) {
                         confirmClear = true
                     }
                 }
             }
         }
         .confirmationDialog(
-            String(localized: "Clear all history?"),
+            "Xoá toàn bộ lịch sử?",
             isPresented: $confirmClear,
             titleVisibility: .visible
         ) {
-            Button(String(localized: "Clear"), role: .destructive) {
+            Button("Xoá", role: .destructive) {
                 Task { await viewModel.clear() }
             }
-            Button(String(localized: "Cancel"), role: .cancel) {}
+            Button("Huỷ", role: .cancel) {}
         }
         .task { await viewModel.load() }
         .refreshable { await viewModel.load() }

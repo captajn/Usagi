@@ -15,6 +15,7 @@ final class AppDependencies: ObservableObject {
     let backupService: BackupService
     let syncService: SyncService
     let cbzImporter: CBZImporter
+    let statsRepository: StatsRepository
     var settings: UserDefaultsSettingsStore
     var appLock: AppLockService
     let navigation: NavigationStore
@@ -41,6 +42,7 @@ final class AppDependencies: ObservableObject {
         self.trackerRepository = PersistentTrackerRepository(db: db)
         self.scrobblingService = ScrobblingService(db: db)
         self.cbzImporter = CBZImporter(db: db)
+        self.statsRepository = StatsRepository(db: db)
         self.syncService = SyncService(db: db)
 
         let settingsBox = settingsStore

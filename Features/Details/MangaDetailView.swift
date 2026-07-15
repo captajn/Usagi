@@ -61,7 +61,7 @@ private struct MangaDetailScreen: View {
             ReaderView(manga: route.manga, chapter: route.chapter, initialPage: route.page)
         }
         .alert(
-            String(localized: "Download"),
+            "Tải xuống",
             isPresented: Binding(
                 get: { viewModel.downloadMessage != nil },
                 set: { if !$0 { viewModel.downloadMessage = nil } }
@@ -97,7 +97,7 @@ private struct MangaDetailScreen: View {
             MangaCoverView(urlString: manga.largeCoverURL ?? manga.coverURL)
                 .frame(width: 130)
                 .shadow(radius: 6, y: 3)
-                .accessibilityLabel(String(localized: "Cover for \(manga.title)"))
+                .accessibilityLabel("Ảnh bìa \(manga.title)")
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(manga.title)
@@ -117,7 +117,7 @@ private struct MangaDetailScreen: View {
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
-                Text(String(localized: "\(manga.chapterCount) chapters"))
+                Text("\(manga.chapterCount) chương")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -135,9 +135,7 @@ private struct MangaDetailScreen: View {
                         readerRoute = ReaderRoute(manga: manga, chapter: chapter, page: page)
                     } label: {
                         Label(
-                            viewModel.history == nil
-                                ? String(localized: "Read")
-                                : String(localized: "Continue"),
+                            viewModel.history == nil ? "Đọc" : "Tiếp tục",
                             systemImage: "book"
                         )
                         .frame(maxWidth: .infinity)
@@ -153,9 +151,7 @@ private struct MangaDetailScreen: View {
                 }
                 .buttonStyle(.bordered)
                 .tint(viewModel.isFavourite ? .pink : .accentColor)
-                .accessibilityLabel(viewModel.isFavourite
-                    ? String(localized: "Remove from library")
-                    : String(localized: "Add to library"))
+                .accessibilityLabel(viewModel.isFavourite ? "Bỏ yêu thích" : "Thêm vào yêu thích")
 
                 Button {
                     Task { await viewModel.toggleTrack() }
@@ -164,9 +160,7 @@ private struct MangaDetailScreen: View {
                         .frame(width: 44, height: 34)
                 }
                 .buttonStyle(.bordered)
-                .accessibilityLabel(viewModel.isTracked
-                    ? String(localized: "Stop tracking")
-                    : String(localized: "Track updates"))
+                .accessibilityLabel(viewModel.isTracked ? "Bỏ theo dõi" : "Theo dõi cập nhật")
             }
         }
     }
@@ -185,7 +179,7 @@ private struct MangaDetailScreen: View {
 
     private func descriptionSection(_ manga: Manga) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(String(localized: "Synopsis")).font(.headline)
+            Text("Tóm tắt").font(.headline)
             Text(manga.description)
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -194,7 +188,7 @@ private struct MangaDetailScreen: View {
 
     private func chaptersSection(_ manga: Manga) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(String(localized: "Chapters")).font(.headline)
+            Text("Chương").font(.headline)
             ForEach(manga.chapters) { chapter in
                 HStack {
                     Button {
@@ -213,7 +207,7 @@ private struct MangaDetailScreen: View {
                     } label: {
                         Image(systemName: "arrow.down.circle")
                     }
-                    .accessibilityLabel(String(localized: "Download \(chapter.displayTitle)"))
+                    .accessibilityLabel("Tải \(chapter.displayTitle)")
                 }
                 .padding(.vertical, 6)
                 Divider()
@@ -223,7 +217,7 @@ private struct MangaDetailScreen: View {
 
     private var relatedSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(String(localized: "Related")).font(.headline)
+            Text("Liên quan").font(.headline)
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 12) {
                     ForEach(viewModel.related) { item in

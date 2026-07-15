@@ -11,24 +11,24 @@ struct SyncSettingsView: View {
 
     var body: some View {
         Form {
-            Section(String(localized: "Server")) {
-                TextField(String(localized: "Server URL"), text: $serverURL)
+            Section("Máy chủ") {
+                TextField("URL máy chủ", text: $serverURL)
                     .textInputAutocapitalization(.never)
                     .keyboardType(.URL)
             }
 
             if account.isLoggedIn {
-                Section(String(localized: "Account")) {
-                    LabeledContent(String(localized: "Email"), value: account.email ?? "—")
+                Section("Tài khoản") {
+                    LabeledContent("Email", value: account.email ?? "—")
                     if let last = account.lastSyncAt {
-                        LabeledContent(String(localized: "Last sync"), value: last.formatted())
+                        LabeledContent("Lần đồng bộ cuối", value: last.formatted())
                     }
                     Button {
                         Task { await sync() }
                     } label: {
-                        if busy { ProgressView() } else { Text(String(localized: "Sync now")) }
+                        if busy { ProgressView() } else { Text("Đồng bộ ngay") }
                     }
-                    Button(String(localized: "Log out"), role: .destructive) {
+                    Button("Đăng xuất", role: .destructive) {
                         Task {
                             try? await dependencies.syncService.logout()
                             await reload()
@@ -36,15 +36,15 @@ struct SyncSettingsView: View {
                     }
                 }
             } else {
-                Section(String(localized: "Sign in")) {
-                    TextField(String(localized: "Email"), text: $email)
+                Section("Đăng nhập") {
+                    TextField("Email", text: $email)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
-                    SecureField(String(localized: "Password"), text: $password)
+                    SecureField("Mật khẩu", text: $password)
                     Button {
                         Task { await login() }
                     } label: {
-                        if busy { ProgressView() } else { Text(String(localized: "Log in")) }
+                        if busy { ProgressView() } else { Text("Đăng nhập") }
                     }
                 }
             }
@@ -53,7 +53,7 @@ struct SyncSettingsView: View {
                 Section { Text(message).font(.footnote).foregroundStyle(.secondary) }
             }
         }
-        .navigationTitle(String(localized: "Sync"))
+        .navigationTitle("Đồng bộ")
         .task { await reload() }
     }
 
@@ -68,7 +68,7 @@ struct SyncSettingsView: View {
         defer { busy = false }
         do {
             account = try await dependencies.syncService.login(email: email, password: password, serverURL: serverURL)
-            message = String(localized: "Logged in (stub).")
+            message = "Đăng nhập thành công (stub)."
         } catch {
             message = error.localizedDescription
         }
@@ -79,7 +79,7 @@ struct SyncSettingsView: View {
         defer { busy = false }
         do {
             account = try await dependencies.syncService.syncNow()
-            message = String(localized: "Sync completed.")
+            message = "Đồng bộ hoàn tất."
         } catch {
             message = error.localizedDescription
         }

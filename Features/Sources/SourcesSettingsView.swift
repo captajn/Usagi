@@ -8,11 +8,11 @@ struct SourcesSettingsView: View {
     var body: some View {
         List {
             Section {
-                Text(String(localized: "Enable sources used for Explore and Search. Real remote parsers will plug into the same repository layer."))
+                Text("Bật các nguồn dùng cho Khám phá và Tìm kiếm. Trình phân tích thực sẽ plug vào cùng lớp repository.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-            Section(String(localized: "Catalogue")) {
+            Section("Danh mục") {
                 ForEach(sources) { source in
                     Toggle(isOn: Binding(
                         get: { source.isEnabled },
@@ -38,7 +38,7 @@ struct SourcesSettingsView: View {
                 }
             }
         }
-        .navigationTitle(String(localized: "Sources"))
+        .navigationTitle("Nguồn")
         .task { await reload() }
     }
 

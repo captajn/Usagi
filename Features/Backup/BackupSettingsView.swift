@@ -11,7 +11,7 @@ struct BackupSettingsView: View {
     var body: some View {
         List {
             Section {
-                Text(String(localized: "Export favourites, history, bookmarks, tracker and settings as a versioned JSON backup. Designed to map toward Android Usagi backup schema over time."))
+                Text("Xuất yêu thích, lịch sử, đánh dấu, theo dõi và cài đặt dưới dạng file JSON sao lưu. Thiết kế để tương thích với schema sao lưu Android Usagi.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -22,20 +22,20 @@ struct BackupSettingsView: View {
                     if busy {
                         ProgressView()
                     } else {
-                        Label(String(localized: "Export backup"), systemImage: "square.and.arrow.up")
+                        Label("Xuất sao lưu", systemImage: "square.and.arrow.up")
                     }
                 }
                 Button {
                     showImporter = true
                 } label: {
-                    Label(String(localized: "Import backup"), systemImage: "square.and.arrow.down")
+                    Label("Nhập sao lưu", systemImage: "square.and.arrow.down")
                 }
             }
             if let message {
                 Section { Text(message).font(.footnote) }
             }
         }
-        .navigationTitle(String(localized: "Backup"))
+        .navigationTitle("Sao lưu")
         .sheet(item: Binding(
             get: { exportURL.map(IdentifiableURL.init) },
             set: { exportURL = $0?.url }
@@ -47,7 +47,7 @@ struct BackupSettingsView: View {
                 do {
                     guard let url = try result.get().first else { return }
                     try await dependencies.backupService.importData(from: url)
-                    message = String(localized: "Backup imported.")
+                    message = "Đã nhập sao lưu."
                 } catch {
                     message = error.localizedDescription
                 }
@@ -60,7 +60,7 @@ struct BackupSettingsView: View {
         defer { busy = false }
         do {
             exportURL = try await dependencies.backupService.exportData()
-            message = String(localized: "Backup ready to share.")
+            message = "Sao lưu sẵn sàng để chia sẻ."
         } catch {
             message = error.localizedDescription
         }

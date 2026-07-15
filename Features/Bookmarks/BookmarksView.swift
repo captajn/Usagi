@@ -10,17 +10,17 @@ struct BookmarksView: View {
             if bookmarks.isEmpty {
                 EmptyStateView(
                     systemImage: "bookmark",
-                    title: String(localized: "No bookmarks"),
-                    message: String(localized: "Bookmark a page from the reader.")
+                    title: "Chưa có đánh dấu",
+                    message: "Đánh dấu trang từ trình đọc."
                 )
             } else {
                 List {
                     ForEach(bookmarks) { bm in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(mangaMap[bm.mangaID]?.title ?? "Manga #\(bm.mangaID)")
+                                Text(mangaMap[bm.mangaID]?.title ?? "Truyện #\(bm.mangaID)")
                                     .font(.headline)
-                                Text(String(localized: "Chapter \(bm.chapterID) · page \(bm.page + 1)"))
+                                Text("Chương \(bm.chapterID) · trang \(bm.page + 1)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(bm.createdAt, style: .date)
@@ -39,14 +39,14 @@ struct BookmarksView: View {
                                     await reload()
                                 }
                             } label: {
-                                Label(String(localized: "Delete"), systemImage: "trash")
+                                Label("Xoá", systemImage: "trash")
                             }
                         }
                     }
                 }
             }
         }
-        .navigationTitle(String(localized: "Bookmarks"))
+        .navigationTitle("Đánh dấu")
         .task { await reload() }
     }
 
